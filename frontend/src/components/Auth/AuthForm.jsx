@@ -5,6 +5,10 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', college: '' })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
+  const [isOtpStage, setIsOtpStage] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifyMessage, setVerifyMessage] = useState(null)
 
   function update(e) {
     const { name, value } = e.target
@@ -30,16 +34,63 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
     try {
       const res = await api.auth(mode, payload)
       if (res.ok) {
-        const data = await res.json()
-        setMessage({ type: 'success', text: data.message || `${mode} successful` })
+        const data = await res.json().catch(() => ({}))
+        // If signup, start OTP stage and show notifications
+        if (mode === 'signup') {
+          setMessage(null)
+          setIsOtpStage(true)
+          setVerifyMessage({ type: 'success', text: 'You are registered successfully!' })
+        } else {
+          setMessage({ type: 'success', text: data.message || `${mode} successful` })
+        }
       } else {
-        const err = await res.json().catch(() => ({}))
-        setMessage({ type: 'error', text: err.message || 'Server validation failed' })
+        // Try to extract useful error information from the response
+        let parsed = null
+        let bodyText = null
+        try {
+          // first try json
+          parsed = await res.json()
+        } catch (jsonErr) {
+          try {
+            bodyText = await res.text()
+          } catch (txtErr) {
+            bodyText = null
+          }
+        }
+
+        // Log full response for debugging
+        console.error('Auth failed:', { status: res.status, statusText: res.statusText, parsed, bodyText })
+
+        const serverMsg = (parsed && (parsed.message || parsed.error || parsed.msg)) || bodyText || `Request failed with status ${res.status}`
+        setMessage({ type: 'error', text: serverMsg })
       }
     } catch (err) {
+      console.error('Auth request error', err)
       setMessage({ type: 'error', text: err.message || 'Network error' })
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleVerify(e) {
+    e.preventDefault()
+    setVerifyMessage(null)
+    setVerifyLoading(true)
+    try {
+      const payload = { email: form.email, role, otp }
+      const res = await api.verifyOtp(payload)
+      if (res.ok) {
+        const data = await res.json()
+        setVerifyMessage({ type: 'success', text: data.message || 'OTP verified successfully' })
+        setIsOtpStage(false)
+      } else {
+        const err = await res.json().catch(() => ({}))
+        setVerifyMessage({ type: 'error', text: err.message || 'OTP verification failed' })
+      }
+    } catch (err) {
+      setVerifyMessage({ type: 'error', text: err.message || 'Network error' })
+    } finally {
+      setVerifyLoading(false)
     }
   }
 
@@ -96,6 +147,35 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
           {loading ? (mode === 'login' ? 'Logging in...' : 'Signing up...') : (mode === 'login' ? 'Log In' : 'Sign Up')}
         </button>
       </div>
+
+      {/* Signup OTP flow: after successful signup show two boxes + OTP input + Verify button */}
+      {isOtpStage && (
+        <div className="mt-4 flex flex-col gap-3 items-center">
+          <div className="w-full max-w-sm rounded-lg p-3 bg-green-50 border border-green-100 text-green-800 text-sm shadow-sm">
+            You are registered successfully!
+          </div>
+          <div className="w-full max-w-sm rounded-lg p-3 bg-white border border-slate-100 text-slate-800 text-sm shadow-sm">
+            OTP sent successfully on your email!
+          </div>
+
+          <label className="w-full max-w-sm text-sm text-slate-700">
+            Enter OTP
+            <input name="otp" value={otp} onChange={e => setOtp(e.target.value)} className="w-full mt-2 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+          </label>
+
+          <div className="w-full max-w-sm flex justify-center">
+            <button onClick={handleVerify} disabled={verifyLoading} className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-6 py-3 rounded-lg font-semibold">
+              {verifyLoading ? 'Verifying...' : 'Verify'}
+            </button>
+          </div>
+
+          {verifyMessage && (
+            <div className={`mt-3 w-full max-w-sm rounded-lg p-3 text-sm ${verifyMessage.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
+              {verifyMessage.text}
+            </div>
+          )}
+        </div>
+      )}
 
       {message && (
         <div className={`mt-3 rounded-lg p-3 text-sm ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>

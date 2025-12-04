@@ -13,6 +13,17 @@ async function auth(mode, payload) {
   })
 }
 
+async function verifyOtp(payload) {
+  const url = `${BASE}/auth/verify-otp`
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  })
+}
+
 export default {
   auth,
+  verifyOtp,
 }
