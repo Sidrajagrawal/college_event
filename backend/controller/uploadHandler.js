@@ -22,6 +22,25 @@ async function uploadHandler(req, res) {
     }
 }
 
-module.exports.uploadHandler = uploadHandler
+async function getMyEvents(req, res) {
+    try {
+        const creatorId = (req.user && (req.user._id || req.user.id));
+        if (!creatorId) {
+            return res.status(401).json({ msg: 'Authentication required' });
+        }
+
+        if (!req.user.role || req.user.role !== 'Admin') {
+            return res.status(403).json({ msg: 'Forbidden: admin role required' });
+        }
+
+        const events = await Event.find({ createdBy: creatorId }).sort({ date: 1 });
+        return res.json({ events });
+    } catch (err) {
+        return res.status(500).send({ msg: "Server Error", err: err.message });
+    }
+}
+
+module.exports = { uploadHandler, getMyEvents };
+
 
 

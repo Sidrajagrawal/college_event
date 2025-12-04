@@ -20,7 +20,6 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
     setMessage(null)
     setLoading(true)
 
-    // Basic client-side check: ensure confirm password matches on signup
     if (mode === 'signup') {
       if (form.password !== form.confirmPassword) {
         setMessage({ type: 'error', text: 'Passwords do not match' })
@@ -35,7 +34,6 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
       const res = await api.auth(mode, payload)
       if (res.ok) {
         const data = await res.json().catch(() => ({}))
-        // If signup, start OTP stage and show notifications
         if (mode === 'signup') {
           setMessage(null)
           setIsOtpStage(true)
@@ -44,11 +42,9 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
           setMessage({ type: 'success', text: data.message || `${mode} successful` })
         }
       } else {
-        // Try to extract useful error information from the response
         let parsed = null
         let bodyText = null
         try {
-          // first try json
           parsed = await res.json()
         } catch (jsonErr) {
           try {
@@ -58,7 +54,6 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
           }
         }
 
-        // Log full response for debugging
         console.error('Auth failed:', { status: res.status, statusText: res.statusText, parsed, bodyText })
 
         const serverMsg = (parsed && (parsed.message || parsed.error || parsed.msg)) || bodyText || `Request failed with status ${res.status}`
