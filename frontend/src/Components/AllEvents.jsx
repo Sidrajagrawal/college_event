@@ -2,7 +2,7 @@ import React from "react";
 
 const AllEvents = ({ events }) => {
   return (
-    <section className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-amber-100 py-12 px-6">
+    <section className="min-h-screen bg-gradient-to-br  py-12 px-6">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold text-purple-700 mb-8 text-center">
            All Events
