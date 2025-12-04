@@ -1,15 +1,10 @@
-import { useState } from 'react'
-import './App.css'
-import Navbar from './Components/Navbar'
-import Form from './Components/Form'
+
+import LandingPage from './components/StudentLandingPage/LandingPage'
 
 function App() {
-
   return (
     <>
-    
-    <Navbar/>
-    <Form/>
+      <LandingPage />
     </>
   )
 }

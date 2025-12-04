@@ -17,13 +17,23 @@ export default function EventForm() {
       [e.target.name]: e.target.value,
     }));
   };
+  const [events, setEvents] = useState([]); // store all events
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setEvents([...events, formData]); // add new event to array
     console.log("Event Created:", formData);
-    
+    setFormData({
+      name: "",
+      date: "",
+      time: "",
+      venue: "",
+      fee: "",
+      contact: "",
+      slots: "",
+      description: "",
+    }); // reset form
   };
-
   return (
     <section className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-amber-100 py-12 px-6">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
@@ -77,6 +87,7 @@ export default function EventForm() {
               Create Event
             </button>
           </div>
+
         </form>
       </div>
     </section>
