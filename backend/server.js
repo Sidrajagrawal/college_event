@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // Base Api Route
-// app.use('/api', indexRoute)
+app.use('/api', indexRoute)
 
 
 // Testing Route

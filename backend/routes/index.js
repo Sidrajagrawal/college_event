@@ -1,4 +1,9 @@
 const express = require('express');
 const route = express.Router();
+const authRoute = require('./auth');
+const UploadEventRoute = require('./UploadEvent');
 
-module.export = route
+route.use('/auth',authRoute);
+route.use('/upload-event',UploadEventRoute);
+
+module.exports = route
