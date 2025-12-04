@@ -1,12 +1,8 @@
-import { useState } from 'react'
-import './App.css'
+import React from "react";
+import VolunteerScanner from "./VolunteerScanner";
 
 function App() {
-
-  return (
-    <>
-    </>
-  )
+  return <VolunteerScanner />;
 }
 
-export default App
+export default App;
