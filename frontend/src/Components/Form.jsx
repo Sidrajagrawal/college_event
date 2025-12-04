@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AllEvents from "./AllEvents";
 
 export default function EventForm() {
   const [formData, setFormData] = useState({
@@ -33,8 +34,10 @@ export default function EventForm() {
       slots: "",
       description: "",
     }); // reset form
+    console.log("All Events:", events);
   };
   return (
+    <>
     <section className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-amber-100 py-12 px-6">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-3xl font-bold text-purple-700"> Create New Event</h2>
@@ -89,7 +92,10 @@ export default function EventForm() {
           </div>
 
         </form>
+        
       </div>
     </section>
+    <AllEvents events={events} />
+    </>
   );
 }
