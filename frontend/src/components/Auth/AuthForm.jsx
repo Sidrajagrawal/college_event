@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import axios from 'axios'
+import toast, { Toaster } from 'react-hot-toast'
 
 export default function AuthForm({ mode = 'login', role = 'student' }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', college: '' })
@@ -9,50 +11,89 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
   const [verifyLoading, setVerifyLoading] = useState(false)
   const [verifyMessage, setVerifyMessage] = useState(null)
 
+  const BASE_API = `http://localhost:8080/api/auth`;
+
   function update(e) {
     const { name, value } = e.target
     setForm(f => ({ ...f, [name]: value }))
+  }
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  function mapRole(r) {
+    if (!r) return 'Attendee'
+    const m = { student: 'Attendee', admin: 'Admin', volunteer: 'Volunteer' }
+    return m[r] || 'Attendee'
   }
 
   async function onSubmit(e) {
     e.preventDefault()
     setMessage(null)
     setLoading(true)
-    // Basic client-side check: ensure confirm password matches on signup
-    if (mode === 'signup') {
-      if (form.password !== form.confirmPassword) {
-        setMessage({ type: 'error', text: 'Passwords do not match' })
+    try {
+      if (mode === 'signup') {
+        if (form.password !== form.confirmPassword) {
+          setMessage({ type: 'error', text: 'Passwords do not match' })
+          setLoading(false)
+          return
+        }
+
+        const payload = {
+          username: form.name,
+          email: form.email,
+          password: form.password,
+          Cpassword: form.confirmPassword,
+          role: mapRole(role),
+        }
+        console.log(payload);
+        
+        const res = await axios.post(`${BASE_API}/register`, payload)
+        const data = res.data || {}
         setLoading(false)
+        setIsOtpStage(true)
+        setVerifyMessage({ type: 'success', text: data.msg || 'Registered — OTP sent' })
+        toast.success(data.msg || 'Registered — OTP sent')
         return
       }
 
-      // Simulate successful signup and OTP send (UI-only)
-      setTimeout(() => {
-        setLoading(false)
-        setIsOtpStage(true)
-        setMessage(null)
-        setVerifyMessage({ type: 'success', text: 'You are registered successfully!' })
-      }, 800)
-      return
-    }
-
-    // Simulate login success (UI-only)
-    setTimeout(() => {
+      // login
+      const loginPayload = { email: form.email, password: form.password }
+      const res = await axios.post(`${BASE_API}/login`, loginPayload, { withCredentials: true })
+      const data = res.data || {}
+      toast.success(data.msg || 'Logged in successfully')
+      setMessage({ type: 'success', text: data.msg || 'Logged in successfully' })
       setLoading(false)
-      setMessage({ type: 'success', text: 'Logged in successfully' })
-    }, 600)
+    } catch (err) {
+      const msg = err?.response?.data?.msg || err.message || 'Network error'
+      toast.error(msg)
+      setMessage({ type: 'error', text: msg })
+      setLoading(false)
+    }
   }
 
   async function handleVerify(e) {
     e.preventDefault()
     setVerifyMessage(null)
     setVerifyLoading(true)
-    // Simulate OTP verification
-    setTimeout(() => {
+    try {
+      try {
+        const res = await axios.post(`${BASE_API}/verify-otp`, { email: form.email, otp })
+        const data = res.data || {}
+        toast.success(data.msg || 'OTP verified successfully')
+        setVerifyMessage({ type: 'success', text: data.msg || 'OTP verified successfully' })
+        setIsOtpStage(false)
+        setVerifyLoading(false)
+      } catch (err) {
+        const msg = err?.response?.data?.msg || err.message || 'OTP verification failed'
+        toast.error(msg)
+        setVerifyMessage({ type: 'error', text: msg })
+        setVerifyLoading(false)
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.msg || err.message || 'Network error'
+      toast.error(msg)
+      setVerifyMessage({ type: 'error', text: msg })
       setVerifyLoading(false)
-      setVerifyMessage({ type: 'success', text: 'OTP verified successfully' })
-      setIsOtpStage(false)
-    }, 700)
+    }
   }
 
   const showName = mode === 'signup'
@@ -74,16 +115,26 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
         <input name="email" type="email" value={form.email} onChange={update} required className="w-full mt-2 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
       </label>
 
-      <label className="text-sm text-slate-700">
+      <label className="text-sm text-slate-700 flex flex-col">
         Password
-        <input name="password" type="password" value={form.password} onChange={update} required className="w-full mt-2 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+        <div className="mt-2 flex items-center">
+          <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={update} required className="flex-1 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+          <button type="button" onClick={() => setShowPassword(s => !s)} className="ml-2 px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200">
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
       </label>
 
       {/* Student: replace college field with Confirm Password */}
       {showStudentConfirm && (
-        <label className="text-sm text-slate-700">
+        <label className="text-sm text-slate-700 flex flex-col">
           Confirm Password
-          <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={update} required className="w-full mt-2 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+          <div className="mt-2 flex items-center">
+            <input name="confirmPassword" type={showConfirm ? 'text' : 'password'} value={form.confirmPassword} onChange={update} required className="flex-1 px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            <button type="button" onClick={() => setShowConfirm(s => !s)} className="ml-2 px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200">
+              {showConfirm ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </label>
       )}
 
@@ -143,6 +194,7 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
           {message.text}
         </div>
       )}
+      <Toaster />
     </form>
   )
 }
