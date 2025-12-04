@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import Events from './Events'
+import HackathonsPage from './HackathonsPage'
 
 function LandingPage() {
   const [showChat, setShowChat] = useState(false)
@@ -102,6 +104,12 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Events Section */}
+      <Events />
+
+      {/* Hackathons & Webinars Section */}
+      <HackathonsPage />
 
       {/* Floating Chat Widget */}
       <div className="fixed bottom-6 right-6 z-50">
