@@ -1,0 +1,63 @@
+.auth-page{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background: radial-gradient(1200px 400px at 10% 10%, rgba(99,102,241,0.08), transparent 10%), linear-gradient(180deg,#f8fafc,#ffffff);
+  padding:24px;
+}
+
+.auth-card{
+  background:#fff;
+  border-radius:14px;
+  padding:26px;
+  box-shadow:0 12px 50px rgba(2,6,23,0.08), 0 2px 6px rgba(2,6,23,0.04);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+
+.auth-card{min-height:640px}
+.auth-card:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(2,6,23,0.12)}
+
+.brand{
+  margin:0 0 8px 0;
+  font-size:20px;
+  color:#0f172a;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.brand:before{display:none}
+
+.mode-tabs{display:flex;background:#f1f5f9;border-radius:10px;padding:6px;gap:6px;margin:6px 0 12px}
+.mode-tabs button{flex:1;padding:8px 12px;border:0;background:transparent;border-radius:8px;cursor:pointer;color:#475569;font-weight:600}
+.mode-tabs button.active{background:linear-gradient(90deg,#111827,#0f172a);color:#fff}
+
+.role-select{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+.role{padding:8px 12px;border-radius:999px;border:1px solid #e6eef8;background:#fff;cursor:pointer;font-weight:600;color:#0f172a}
+.role.active{background:linear-gradient(90deg,#0f172a,#111827);color:#fff;border-color:transparent}
+
+.auth-form{flex:1;padding:6px 2px 4px}
+.auth-form label{display:block;margin-bottom:10px;font-size:13px;color:#0f172a}
+.auth-form input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #e6eef8;margin-top:6px;background:#fbfdff;outline:none;transition:box-shadow .12s ease,border-color .12s ease}
+.auth-form input:focus{box-shadow:0 6px 20px rgba(99,102,241,0.08);border-color:#6366f1}
+
+.form-actions{display:flex;justify-content:center;margin-top:6px}
+.primary{background:linear-gradient(90deg,#111827,#0f172a);color:#fff;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;box-shadow:0 6px 18px rgba(15,23,42,0.08)}
+.primary:disabled{opacity:0.7;cursor:not-allowed}
+
+.alert{margin-top:12px;padding:10px;border-radius:10px;font-size:13px}
+.alert.error{background:#fff1f2;color:#b91c1c;border:1px solid #fee2e2}
+.alert.success{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+
+@media (max-width:680px){
+  .auth-card{height:auto;padding:18px}
+}
+
+/* Ensure no form scrollbar appears in WebKit browsers */
+.auth-form::-webkit-scrollbar{display:none}
+
