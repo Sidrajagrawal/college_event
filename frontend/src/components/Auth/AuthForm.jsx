@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import api from '../../services/api'
 
 export default function AuthForm({ mode = 'login', role = 'student' }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', college: '' })
@@ -19,7 +18,6 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
     e.preventDefault()
     setMessage(null)
     setLoading(true)
-
     // Basic client-side check: ensure confirm password matches on signup
     if (mode === 'signup') {
       if (form.password !== form.confirmPassword) {
@@ -27,71 +25,34 @@ export default function AuthForm({ mode = 'login', role = 'student' }) {
         setLoading(false)
         return
       }
+
+      // Simulate successful signup and OTP send (UI-only)
+      setTimeout(() => {
+        setLoading(false)
+        setIsOtpStage(true)
+        setMessage(null)
+        setVerifyMessage({ type: 'success', text: 'You are registered successfully!' })
+      }, 800)
+      return
     }
 
-    const payload = { role, ...form }
-
-    try {
-      const res = await api.auth(mode, payload)
-      if (res.ok) {
-        const data = await res.json().catch(() => ({}))
-        // If signup, start OTP stage and show notifications
-        if (mode === 'signup') {
-          setMessage(null)
-          setIsOtpStage(true)
-          setVerifyMessage({ type: 'success', text: 'You are registered successfully!' })
-        } else {
-          setMessage({ type: 'success', text: data.message || `${mode} successful` })
-        }
-      } else {
-        // Try to extract useful error information from the response
-        let parsed = null
-        let bodyText = null
-        try {
-          // first try json
-          parsed = await res.json()
-        } catch (jsonErr) {
-          try {
-            bodyText = await res.text()
-          } catch (txtErr) {
-            bodyText = null
-          }
-        }
-
-        // Log full response for debugging
-        console.error('Auth failed:', { status: res.status, statusText: res.statusText, parsed, bodyText })
-
-        const serverMsg = (parsed && (parsed.message || parsed.error || parsed.msg)) || bodyText || `Request failed with status ${res.status}`
-        setMessage({ type: 'error', text: serverMsg })
-      }
-    } catch (err) {
-      console.error('Auth request error', err)
-      setMessage({ type: 'error', text: err.message || 'Network error' })
-    } finally {
+    // Simulate login success (UI-only)
+    setTimeout(() => {
       setLoading(false)
-    }
+      setMessage({ type: 'success', text: 'Logged in successfully' })
+    }, 600)
   }
 
   async function handleVerify(e) {
     e.preventDefault()
     setVerifyMessage(null)
     setVerifyLoading(true)
-    try {
-      const payload = { email: form.email, role, otp }
-      const res = await api.verifyOtp(payload)
-      if (res.ok) {
-        const data = await res.json()
-        setVerifyMessage({ type: 'success', text: data.message || 'OTP verified successfully' })
-        setIsOtpStage(false)
-      } else {
-        const err = await res.json().catch(() => ({}))
-        setVerifyMessage({ type: 'error', text: err.message || 'OTP verification failed' })
-      }
-    } catch (err) {
-      setVerifyMessage({ type: 'error', text: err.message || 'Network error' })
-    } finally {
+    // Simulate OTP verification
+    setTimeout(() => {
       setVerifyLoading(false)
-    }
+      setVerifyMessage({ type: 'success', text: 'OTP verified successfully' })
+      setIsOtpStage(false)
+    }, 700)
   }
 
   const showName = mode === 'signup'
